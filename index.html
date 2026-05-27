@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Plata · Panel del Cajero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN
+     ============================================================ -->
+<div id="login" class="login-screen">
+
+  <!-- Panel promocional (solo desktop) -->
+  <div class="login-promo">
+    <div class="promo-slide" style="background-image:url('img/miplata_principio.jpg')"></div>
+    <div class="promo-slide" style="background-image:url('img/miplata_marketing.jpg');animation-delay:-10s"></div>
+    <div class="promo-slide" style="background-image:url('img/miplata_card.jpg');animation-delay:-5s"></div>
+    <div class="promo-overlay"></div>
+    <div class="promo-content">
+      <div class="logo-mark" style="background:url('img/miplatalogo.jpeg') center/cover no-repeat, #fff;width:52px;height:52px;border-radius:15px;margin-bottom:28px"></div>
+      <h2 class="promo-titulo">Tu dinero,<br>siempre contigo.</h2>
+      <p class="promo-sub">Banca digital simple, segura y a tu medida.</p>
+      <ul class="promo-lista">
+        <li>Transferencias instantáneas</li>
+        <li>Pagos de servicios en un clic</li>
+        <li>Control total de tus finanzas</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Formulario de login -->
+  <div class="login-card-wrap">
+    <div class="login-card">
+      <div class="logo">
+        <div class="logo-mark" style="background:url('img/miplatalogo.jpeg') center/cover no-repeat, #fff;"></div>
+        <div style="text-align:center">
+          <small>Banca Digital</small>
+          <div>Mi Plata</div>
+        </div>
+      </div>
+      <h1>Bienvenido de nuevo</h1>
+      <p class="sub">Ingresa a tu cuenta para continuar</p>
+
+      <div id="intentos" class="intentos">⚠ Intento <span id="intentosNum">1</span> de 3</div>
+
+      <form id="formLogin" autocomplete="off">
+        <div class="field">
+          <label>Usuario</label>
+          <input type="text" id="loginUser" placeholder="ej. maria" required />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="loginPass" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+          Iniciar sesión
+        </button>
+      </form>
+
+      <div class="login-hint">
+        Demo: usuario <code>maria</code> · clave <code>1234</code>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div id="app" class="shell hidden">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark" style="background:url('img/miplatalogo.jpeg') center/cover no-repeat, #fff;"></div>
+      <div>
+        <small>Banca Digital</small>
+        <div>Mi Plata</div>
+      </div>
+    </div>
+
+    <div class="nav-section-title">Inicio</div>
+    <button class="side-btn active" data-action="inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-5h-2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Dashboard
+    </button>
+    <button class="side-btn" data-action="perfil">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Mi perfil
+    </button>
+
+    <div class="nav-section-title">Transacciones</div>
+    <button class="side-btn" data-action="consignar">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Consignar
+    </button>
+    <button class="side-btn" data-action="retirar">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Retirar
+    </button>
+    <button class="side-btn" data-action="transferir">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      Transferir
+    </button>
+    <button class="side-btn" data-action="consultar">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Consultar saldo
+    </button>
+
+    <div class="nav-section-title">Servicios</div>
+    <button class="side-btn" data-action="servicios">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2l3-9 6 18 3-9h4"/></svg>
+      Pagar servicios
+    </button>
+    <button class="side-btn" data-action="recargas">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Recargas
+    </button>
+    <button class="side-btn" data-action="comprarTC">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Comprar a cuotas
+    </button>
+
+    <div class="nav-section-title">Documentos</div>
+    <button class="side-btn" data-action="movimientos">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Movimientos
+    </button>
+    <button class="side-btn" data-action="extractos">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+      Extractos
+    </button>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="side-user">
+      <div class="avatar" id="avatarSide">M</div>
+      <div class="side-user-info">
+        <div class="nombre" id="userNombre">María López</div>
+        <div class="doc" id="userDoc">CC 1.234.567</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ──────────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <button class="top-btn menu-toggle" id="btnMenu" title="Menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 id="pageTitle">Inicio<small id="pageSub">Resumen de tus cuentas</small></h1>
+
+      <button class="top-btn" data-action="perfil" title="Perfil">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+
+      <!-- Notificaciones -->
+      <div class="dropdown" id="notifDropdown">
+        <button class="top-btn" id="btnNotif" title="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="dot"></div>
+        </button>
+        <div class="dropdown-menu" style="min-width:300px">
+          <div style="padding:8px 12px;font-weight:700;font-size:13px">Notificaciones</div>
+          <div class="dropdown-divider"></div>
+          <div class="notif-item">
+            <div class="notif-title">Consignación recibida</div>
+            <div class="notif-text">Recibiste $500.000 de Pago de nómina en Cuenta de Ahorros.</div>
+            <div class="notif-time">Hace 2 días</div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-title">Pago de tarjeta próximo</div>
+            <div class="notif-text">Recuerda pagar tu tarjeta antes del 25 del mes.</div>
+            <div class="notif-time">Hace 5 días</div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-title">Tasa de interés actualizada</div>
+            <div class="notif-text">Tu cuenta de ahorros ahora genera 1.5% mensual.</div>
+            <div class="notif-time">Hace 1 semana</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atajos rápidos -->
+      <div class="dropdown" id="atajosDropdown">
+        <button class="top-btn" id="btnAtajos" title="Atajos rápidos">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </button>
+        <div class="dropdown-menu">
+          <div style="padding:8px 12px;font-weight:700;font-size:13px">Atajos rápidos</div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" data-action="consignar"><span class="icon">＋</span><span>Consignar a Ahorros</span></button>
+          <button class="dropdown-item" data-action="transferir"><span class="icon">↻</span><span>Transferir entre cuentas</span></button>
+          <button class="dropdown-item" data-action="servicios"><span class="icon">⚡</span><span>Pagar servicios</span></button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" data-action="cambiarPass"><span class="icon">🔒</span><span>Cambiar contraseña</span></button>
+          <button class="dropdown-item" id="btnLogout"><span class="icon">⏻</span><span>Cerrar sesión</span></button>
+        </div>
+      </div>
+    </div><!-- /topbar -->
+
+    <!-- ====================================================
+         Vista: Dashboard
+         ==================================================== -->
+    <div id="viewDashboard" class="view">
+      <div class="row-2">
+        <!-- Tarjeta -->
+        <div>
+          <div class="saldo-card">
+            <div class="card-top">
+              <div class="saldo-tipo-tabs" id="cuentaTabs"></div>
+              <div class="card-brand">
+                <div class="b-name">Mi Plata</div>
+                <div class="b-sub">Banca Digital</div>
+              </div>
+            </div>
+
+            <div class="card-chip-row">
+              <div class="card-chip"></div>
+              <div class="card-wave">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M8.5 8.5a5 5 0 0 1 0 7"/>
+                  <path d="M11.5 5.5a9 9 0 0 1 0 13"/>
+                  <path d="M14.5 2.5a13 13 0 0 1 0 19"/>
+                </svg>
+              </div>
+              <button class="toggle-eye" id="toggleEye" title="Mostrar/ocultar saldo" style="margin-left:auto">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;stroke:#fff">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="saldo-label" id="saldoLabel">Saldo disponible</div>
+            <div class="saldo-amount">
+              <span class="currency">COP</span>
+              <span id="saldoMonto">$0</span>
+            </div>
+
+            <div class="card-number" id="cardNumber">
+              <span>••••</span><span>••••</span><span>••••</span><span>2210</span>
+            </div>
+
+            <div class="card-bottom">
+              <div>
+                <div class="card-meta-label">Titular</div>
+                <div class="card-meta-val" id="cardTitular">María López</div>
+              </div>
+              <div>
+                <div class="card-meta-label">Válida hasta</div>
+                <div class="card-meta-val" id="cardExpira">12/28</div>
+              </div>
+              <div class="card-network" title="Mi Plata">
+                <div class="card-network-dot"></div>
+                <div class="card-network-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Ingresos del mes</div>
+              <div class="val" id="statIngresos">$0</div>
+              <div class="delta up">▲ Movimientos entrantes</div>
+            </div>
+            <div class="stat">
+              <div class="label">Gastos del mes</div>
+              <div class="val" id="statGastos">$0</div>
+              <div class="delta down">▼ Salidas + transferencias</div>
+            </div>
+            <div class="stat">
+              <div class="label">Movimientos</div>
+              <div class="val" id="statCount">0</div>
+              <div class="delta">Total registrados</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Movimientos recientes -->
+        <div>
+          <div class="panel">
+            <div class="panel-titulo">
+              <h3>Movimientos recientes</h3>
+              <a id="verTodos">Ver todos →</a>
+            </div>
+            <div id="listaMovs"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /viewDashboard -->
+
+    <!-- ====================================================
+         Vista: Perfil  (página completa)
+         ==================================================== -->
+    <div id="viewPerfil" class="view hidden">
+      <button class="back-btn" data-action="inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al dashboard
+      </button>
+
+      <div class="perfil-page">
+        <!-- Foto + identidad -->
+        <div class="perfil-photo-card">
+          <div class="perfil-photo-wrap" id="perfilPhotoWrap">
+            <span id="perfilPhotoIniciales">M</span>
+            <div class="overlay">Cambiar foto</div>
+          </div>
+          <input type="file" id="perfilPhotoInput" accept="image/*" hidden />
+          <div class="perfil-name" id="perfilNombreCard">María López</div>
+          <div class="perfil-doc" id="perfilDocCard">CC 1.234.567</div>
+          <div class="perfil-photo-actions">
+            <button class="btn btn-ghost" id="btnSubirFoto">📷 Subir foto</button>
+            <button class="btn btn-ghost" id="btnQuitarFoto">Quitar</button>
+          </div>
+        </div>
+
+        <!-- Datos + cambio de clave -->
+        <div>
+          <div class="perfil-section">
+            <h3>Datos personales</h3>
+            <div class="desc">Actualiza la información de tu cuenta. Estos datos aparecen en tus comprobantes.</div>
+            <div class="field-row">
+              <div class="field"><label>Nombre completo</label><input id="pfNombre" /></div>
+              <div class="field"><label>Identificación (CC)</label><input id="pfId" /></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Celular</label><input id="pfCel" /></div>
+              <div class="field"><label>Correo electrónico</label><input id="pfMail" type="email" placeholder="tu@correo.com" /></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Usuario</label><input id="pfUser" /></div>
+              <div class="field"><label>Dirección</label><input id="pfDir" placeholder="Calle 1 # 2-3" /></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+              <button class="btn btn-ghost" id="btnRevertirPerfil">Cancelar cambios</button>
+              <button class="btn btn-primary" id="btnGuardarPerfil">💾 Guardar cambios</button>
+            </div>
+          </div>
+
+          <div class="perfil-section">
+            <h3>Cambiar contraseña</h3>
+            <div class="desc">Por seguridad, confirma tu clave actual antes de elegir una nueva.</div>
+            <div class="field"><label>Clave actual</label><input type="password" id="pfPassActual" /></div>
+            <div class="field-row">
+              <div class="field"><label>Nueva clave</label><input type="password" id="pfPassNueva" /></div>
+              <div class="field"><label>Confirmar nueva clave</label><input type="password" id="pfPassConfirma" /></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn btn-primary" id="btnCambiarPass">🔒 Actualizar contraseña</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /viewPerfil -->
+
+    <!-- ====================================================
+         Vista: Movimientos  (página completa)
+         ==================================================== -->
+    <div id="viewMovimientos" class="view hidden">
+      <button class="back-btn" data-action="inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al dashboard
+      </button>
+
+      <div class="panel">
+        <div class="panel-titulo">
+          <h3>Historial de movimientos</h3>
+          <span id="movPageCuenta" style="font-size:13px;color:var(--tinta-3)"></span>
+        </div>
+
+        <!-- Selector de cuenta -->
+        <div class="extracto-tabs" id="movPageTabs"></div>
+
+        <!-- Lista completa -->
+        <div id="movPageLista"></div>
+
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--linea);
+                    font-size:12px;color:var(--tinta-3);text-align:center;">
+          💡 Toca cualquier movimiento para ver el comprobante
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" data-action="extractos">Ver extractos →</button>
+        </div>
+      </div>
+    </div><!-- /viewMovimientos -->
+
+    <!-- ====================================================
+         Vista: Extractos  (página completa)
+         ==================================================== -->
+    <div id="viewExtractos" class="view hidden">
+      <button class="back-btn" data-action="inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al dashboard
+      </button>
+
+      <div class="panel">
+        <div class="panel-titulo">
+          <h3>Extractos</h3>
+          <button class="btn btn-primary" id="btnDescExtractoPage" style="padding:8px 14px;font-size:13px">
+            ⬇ Descargar extracto
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="extracto-tabs" id="extractoTabsPage">
+          <button class="extracto-tab active" data-f="todos">Todos</button>
+          <button class="extracto-tab" data-f="consignacion">Consignaciones</button>
+          <button class="extracto-tab" data-f="retiro">Retiros</button>
+          <button class="extracto-tab" data-f="transferencia">Transferencias</button>
+          <button class="extracto-tab" data-f="servicio">Servicios</button>
+          <button class="extracto-tab" data-f="compra">Compras</button>
+        </div>
+
+        <!-- Lista filtrada -->
+        <div id="extractoListaPage"></div>
+
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--linea);
+                    font-size:12px;color:var(--tinta-3);text-align:center;">
+          💡 Toca cualquier movimiento para ver el comprobante y descargarlo
+        </div>
+      </div>
+    </div><!-- /viewExtractos -->
+
+  </main>
+</div><!-- /app -->
+
+<!-- Modal genérico -->
+<div id="modal" class="modal-backdrop">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitulo">Título</h2>
+        <p id="modalSub"></p>
+      </div>
+      <button class="modal-close" id="modalClose">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- Recibo printable (oculto, solo para imprimir) -->
+<div id="reciboPrintable" style="display:none"></div>
+
+<!-- Toast container -->
+<div id="toastWrap" class="toast-wrap"></div>
+
+<!-- Módulo principal — usa ES6 modules (requiere servidor: Live Server / http) -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
