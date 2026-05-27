@@ -1,8 +1,9 @@
 import { $, iniciales, Scheduler } from './utils.js';
-import { cliente, ui } from './state.js';
+import { cliente, ui } from './estado.js';
+import { CuentaCorriente, TarjetaCredito } from './models.js';
 import { toast } from './toast.js';
 import { abrirModal, cerrarModal } from './modal.js';
-import { renderSideUser } from './render.js';
+import { renderSideUser, renderTabs } from './render.js';
 
 let _perfilListenersAdded = false;
 
@@ -37,7 +38,70 @@ function _rellenarCampos() {
       img.className = 'avatar-img';
       if (!img.parentElement) $('#perfilPhotoWrap').prepend(img);
     }
+
+    _renderProductos();
   });
+}
+
+function _renderProductos() {
+  const lista = document.getElementById('listaProductos');
+  if (!lista) return;
+
+  const tieneCorriente = cliente.cuentas.some(c => c instanceof CuentaCorriente);
+  const tieneTarjeta   = cliente.cuentas.some(c => c instanceof TarjetaCredito);
+
+  if (tieneCorriente && tieneTarjeta) {
+    lista.innerHTML = '<p style="font-size:13px;color:var(--tinta-3)">Ya tienes todos los productos disponibles.</p>';
+    return;
+  }
+
+  const rand4 = () => String(Math.floor(Math.random() * 9000) + 1000);
+
+  let html = '';
+
+  if (!tieneCorriente) {
+    html += `
+      <div class="producto-item">
+        <div>
+          <div class="producto-nombre">Cuenta Corriente</div>
+          <div class="producto-sub">Sobregiro del 20% · apertura gratuita</div>
+        </div>
+        <button class="btn btn-primary" id="btnAgregarCorriente">+ Activar</button>
+      </div>`;
+  }
+
+  if (!tieneTarjeta) {
+    html += `
+      <div class="producto-item">
+        <div>
+          <div class="producto-nombre">Tarjeta de Crédito</div>
+          <div class="producto-sub">Cupo de $2.000.000 · compras a cuotas</div>
+        </div>
+        <button class="btn btn-primary" id="btnAgregarTarjeta">+ Activar</button>
+      </div>`;
+  }
+
+  lista.innerHTML = html;
+
+  if (!tieneCorriente) {
+    document.getElementById('btnAgregarCorriente').addEventListener('click', () => {
+      const nueva = new CuentaCorriente(`CC-${rand4()}-${rand4()}`, cliente.nombre, 0);
+      cliente.cuentas.push(nueva);
+      renderTabs();
+      _renderProductos();
+      toast('Cuenta Corriente activada', `Número: ${nueva.numero}`, 'success');
+    });
+  }
+
+  if (!tieneTarjeta) {
+    document.getElementById('btnAgregarTarjeta').addEventListener('click', () => {
+      const nueva = new TarjetaCredito(`TC-${rand4()}-${rand4()}-${rand4()}`, cliente.nombre, 2_000_000);
+      cliente.cuentas.push(nueva);
+      renderTabs();
+      _renderProductos();
+      toast('Tarjeta de Crédito activada', 'Cupo: $2.000.000', 'success');
+    });
+  }
 }
 
 function _bindBotones() {

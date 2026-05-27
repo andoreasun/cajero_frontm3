@@ -1,5 +1,5 @@
 import { $, $$, fmt, Scheduler } from './utils.js';
-import { cliente, clientes, ui } from './state.js';
+import { cliente, clientes, ui } from './estado.js';
 import { Movimiento, CuentaAhorros, CuentaCorriente, TarjetaCredito } from './models.js';
 import { abrirModal, cerrarModal } from './modal.js';
 import { toast } from './toast.js';
@@ -27,7 +27,7 @@ export function accionConsultar() {
         const signo  = salida ? '−' : '+';
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--linea)">
           <span style="font-size:13px;color:var(--tinta-2);flex:1;margin-right:12px">${m.descripcion}</span>
-          <span style="font-size:13px;font-weight:700;color:${color};white-space:nowrap">${signo} ${fmt(m.monto)}</span>
+          <span style="font-size:13px;font-weight:700;color:${color};white-space:nowrap">${signo} ${fmt(m.valor)}</span>
         </div>`;
       }).join('')}
     </div>` : '';
@@ -136,11 +136,45 @@ export function accionConsignar() {
 }
 
 export function accionRetirar() {
-  if (ui.cuentaActiva instanceof TarjetaCredito) {
-    const tc = ui.cuentaActiva;
+  // Paso 1 — selección tipo cajero
+  const cards = cliente.cuentas.map((c, i) => {
+    const esTarjeta = c instanceof TarjetaCredito;
+    const label   = esTarjeta ? 'Avance de Tarjeta de Crédito' : `Retirar · Cuenta ${c.tipo}`;
+    const detalle = esTarjeta
+      ? `Cupo disponible: <b>${fmt(c.cupoDisponible)}</b>`
+      : c instanceof CuentaCorriente
+        ? `Saldo: <b>${fmt(c.saldo)}</b> &nbsp;·&nbsp; sobregiro 20%`
+        : `Saldo: <b>${fmt(c.saldo)}</b> &nbsp;·&nbsp; interés 1.5%`;
+    return `
+      <button class="cajero-opcion" data-idx="${i}">
+        <div class="cajero-label">${label}</div>
+        <div class="cajero-num">${c.numero}</div>
+        <div class="cajero-detalle">${detalle}</div>
+      </button>`;
+  }).join('');
+
+  abrirModal({
+    titulo: 'Cajero · Retiro',
+    sub: '¿De qué producto deseas retirar?',
+    body: `<div class="cajero-grid">${cards}</div>`,
+    footer: `<button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>`,
+  });
+
+  $$('.cajero-opcion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cuenta = cliente.cuentas[+btn.dataset.idx];
+      ui.cuentaActiva = cuenta;
+      cerrarModal();
+      Scheduler.defer(() => _procesarRetiro(cuenta), 200);
+    });
+  });
+}
+
+function _procesarRetiro(c) {
+  if (c instanceof TarjetaCredito) {
     abrirModal({
       titulo: 'Avance de Cajero',
-      sub: `Tarjeta · Cupo disponible ${fmt(tc.cupoDisponible)}`,
+      sub: `Tarjeta · Cupo disponible ${fmt(c.cupoDisponible)}`,
       body: `
         <div class="info-box warn" style="margin-bottom:12px">
           ⚠ El monto se carga a tu deuda con interés del 2.3% mensual desde hoy.
@@ -148,7 +182,7 @@ export function accionRetirar() {
         <div class="field">
           <label>Monto a retirar</label>
           <input type="number" id="inpAvanceCaj" min="1" step="10000" placeholder="0" />
-          <div class="field-hint">Máximo disponible: <b>${fmt(tc.cupoDisponible)}</b></div>
+          <div class="field-hint">Máximo disponible: <b>${fmt(c.cupoDisponible)}</b></div>
         </div>`,
       footer: `
         <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
@@ -158,20 +192,19 @@ export function accionRetirar() {
       const monto = parseFloat($('#inpAvanceCaj').value);
       try {
         if (!Number.isFinite(monto) || monto <= 0) throw new Error('Monto inválido');
-        if (monto > tc.cupoDisponible) throw new Error(`Excede el cupo disponible (${fmt(tc.cupoDisponible)})`);
-        tc.deuda += monto;
+        if (monto > c.cupoDisponible) throw new Error(`Excede el cupo disponible (${fmt(c.cupoDisponible)})`);
+        c.deuda += monto;
         const m = new Movimiento('avance', monto, 'Avance de cajero', { tasa: 0.023 });
-        tc.registrarMovimiento(m);
+        c.registrarMovimiento(m);
         cerrarModal();
         renderSaldo(); renderMovimientos(); renderStats();
-        toast('Avance exitoso', `${fmt(monto)} · Cupo restante: ${fmt(tc.cupoDisponible)}`, 'warn');
+        toast('Avance exitoso', `${fmt(monto)} · Cupo restante: ${fmt(c.cupoDisponible)}`, 'warn');
         Scheduler.defer(() => abrirRecibo(m), 400);
       } catch (err) { toast('No se pudo procesar', err.message, 'error'); }
     });
     return;
   }
 
-  const c    = ui.cuentaActiva;
   const hint = c instanceof CuentaCorriente
     ? `Límite c/sobregiro: <b>${fmt(c.limiteRetiro)}</b>`
     : `Saldo: <b>${fmt(c.saldo)}</b>. Se aplicará 1.5% de interés.`;

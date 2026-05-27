@@ -1,5 +1,5 @@
 import { $, $$, fmt, Scheduler } from './utils.js';
-import { ui, tarjeta } from './state.js';
+import { ui, tarjeta } from './estado.js';
 import { Movimiento, TarjetaCredito, CuentaCorriente } from './models.js';
 import { abrirModal, cerrarModal } from './modal.js';
 import { toast } from './toast.js';

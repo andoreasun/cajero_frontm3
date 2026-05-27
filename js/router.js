@@ -5,7 +5,9 @@ const VISTAS = {
   inicio:      { el: '#viewDashboard',   titulo: 'Inicio',       sub: 'Resumen de tus cuentas' },
   perfil:      { el: '#viewPerfil',      titulo: 'Mi Perfil',    sub: 'Datos personales y seguridad' },
   movimientos: { el: '#viewMovimientos', titulo: 'Movimientos',  sub: 'Historial completo de transacciones' },
-  extractos:   { el: '#viewExtractos',   titulo: 'Extractos',    sub: 'Estado de cuenta detallado' },
+  extractos:     { el: '#viewExtractos',     titulo: 'Extractos',     sub: 'Estado de cuenta detallado' },
+  certificados:  { el: '#viewCertificados', titulo: 'Certificados',  sub: 'Documentos y constancias' },
+  tienda:        { el: '#viewTienda',       titulo: 'Tienda',        sub: 'Compras a cuotas con tu tarjeta' },
 };
 
 // Callbacks que se ejecutan al entrar a cada vista

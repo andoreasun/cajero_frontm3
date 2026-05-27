@@ -37,7 +37,7 @@
 
   <!-- Formulario de login -->
   <div class="login-card-wrap">
-    <div class="login-card">
+    <div class="login-card" id="loginMainCard">
       <div class="logo">
         <div class="logo-mark" style="background:url('img/miplatalogo.jpeg') center/cover no-repeat, #fff;"></div>
         <div style="text-align:center">
@@ -50,7 +50,7 @@
 
       <div id="intentos" class="intentos">⚠ Intento <span id="intentosNum">1</span> de 3</div>
 
-      <form id="formLogin" autocomplete="off">
+      <form id="formLogin" autocomplete="off" novalidate>
         <div class="field">
           <label>Usuario</label>
           <input type="text" id="loginUser" placeholder="ej. maria" required />
@@ -64,13 +64,71 @@
         </button>
       </form>
 
-      <div class="login-hint">
-        Demo: usuario <code>maria</code> · clave <code>1234</code>
+      <div class="register-link">
+        ¿Eres cliente nuevo? <button type="button" id="btnIrRegistro" class="link-btn">Regístrate</button>
+      </div>
+    </div>
+
+    <!-- ── Tarjeta de registro (oculta por defecto) ── -->
+    <div class="login-card hidden" id="registerCard">
+      <div class="logo">
+        <div class="logo-mark" style="background:url('img/miplatalogo.jpeg') center/cover no-repeat, #fff;"></div>
+        <div style="text-align:center">
+          <small>Banca Digital</small>
+          <div>Mi Plata</div>
+        </div>
+      </div>
+      <h1>Crear cuenta</h1>
+      <p class="sub">Únete a Mi Plata en segundos</p>
+
+      <form id="formRegistro" autocomplete="off" novalidate>
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" id="regNombre" placeholder="ej. Ana García" required />
+        </div>
+        <div class="field">
+          <label>Cédula de ciudadanía</label>
+          <input type="text" id="regCedula" placeholder="ej. 12345678" required />
+          <div class="field-hint">Con esta cédula podrán enviarte transferencias</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Celular</label>
+            <input type="tel" id="regCelular" placeholder="+57 300 000 0000" required />
+          </div>
+          <div class="field">
+            <label>Usuario</label>
+            <input type="text" id="regUsuario" placeholder="ej. ana.garcia" required />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Contraseña</label>
+            <input type="password" id="regPass" placeholder="Mín. 4 caracteres" required />
+          </div>
+          <div class="field">
+            <label>Confirmar</label>
+            <input type="password" id="regPassConf" placeholder="Repetir clave" required />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+          Crear cuenta
+        </button>
+      </form>
+
+      <div class="register-link">
+        ¿Ya tienes cuenta? <button type="button" id="btnIrLogin" class="link-btn">Inicia sesión</button>
       </div>
     </div>
   </div>
 
+
 </div>
+
+<!-- Marca de agua: rincón inferior izquierdo de la pantalla de login -->
+<p id="loginWatermark" class="login-watermark">
+  Proyecto Integrador · Front 1 &nbsp;·&nbsp; &copy; Daniela Vivas · &nbsp;&copy; Andrea Cuartas · &nbsp;2026
+</p>
 
 <!-- ============================================================
      APP SHELL
@@ -124,7 +182,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
       Recargas
     </button>
-    <button class="side-btn" data-action="comprarTC">
+    <button class="side-btn" data-action="tienda">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Comprar a cuotas
     </button>
@@ -138,6 +196,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
       Extractos
     </button>
+    <button class="side-btn" data-action="certificados">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+      Certificados
+    </button>
 
     <div class="sidebar-spacer"></div>
 
@@ -145,7 +207,7 @@
       <div class="avatar" id="avatarSide">M</div>
       <div class="side-user-info">
         <div class="nombre" id="userNombre">María López</div>
-        <div class="doc" id="userDoc">CC 1.234.567</div>
+        <div class="doc" id="userDoc">CC 1234</div>
       </div>
     </div>
   </aside>
@@ -318,7 +380,7 @@
           </div>
           <input type="file" id="perfilPhotoInput" accept="image/*" hidden />
           <div class="perfil-name" id="perfilNombreCard">María López</div>
-          <div class="perfil-doc" id="perfilDocCard">CC 1.234.567</div>
+          <div class="perfil-doc" id="perfilDocCard">CC 1234</div>
           <div class="perfil-photo-actions">
             <button class="btn btn-ghost" id="btnSubirFoto">📷 Subir foto</button>
             <button class="btn btn-ghost" id="btnQuitarFoto">Quitar</button>
@@ -359,6 +421,12 @@
             <div style="display:flex;gap:10px;justify-content:flex-end">
               <button class="btn btn-primary" id="btnCambiarPass">🔒 Actualizar contraseña</button>
             </div>
+          </div>
+
+          <div class="perfil-section">
+            <h3>Mis productos</h3>
+            <div class="desc">Activa productos financieros adicionales para tu cuenta.</div>
+            <div id="listaProductos"></div>
           </div>
         </div>
       </div>
@@ -432,6 +500,28 @@
         </div>
       </div>
     </div><!-- /viewExtractos -->
+
+    <!-- ====================================================
+         Vista: Certificados  (página completa)
+         ==================================================== -->
+    <div id="viewCertificados" class="view hidden">
+      <button class="back-btn" data-action="inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al dashboard
+      </button>
+      <div id="certContenido"></div>
+    </div><!-- /viewCertificados -->
+
+    <!-- ====================================================
+         Vista: Tienda — Comprar a cuotas
+         ==================================================== -->
+    <div id="viewTienda" class="view hidden">
+      <button class="back-btn" data-action="inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al dashboard
+      </button>
+      <div id="tiendaContenido"></div>
+    </div><!-- /viewTienda -->
 
   </main>
 </div><!-- /app -->

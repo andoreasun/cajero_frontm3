@@ -1,34 +1,9 @@
 # Mi Plata · Panel del Cajero
 
 Aplicación web de banca digital construida con HTML5, CSS3 y JavaScript puro (ES6 Modules).  
-Desarrollada como ejercicio de POO, modularización y manejo del Event Loop en el frontend.
+Desarrollada como proyecto integrador de Frontend 1 — POO, modularización y manejo del Event Loop.
 
----
-
-## Estructura del proyecto
-
-```
-miplata_front_momento3/
-├── index.html              ← Punto de entrada (abre con Live Server)
-├── css/
-│   └── main.css            ← Todos los estilos
-├── js/
-│   ├── models.js           ← Clases: Movimiento, Cuenta, CuentaAhorros, etc.
-│   ├── state.js            ← Datos demo + estado mutable de la UI (ui.cuentaActiva…)
-│   ├── utils.js            ← Helpers ($, fmt…) + Scheduler (Event Loop)
-│   ├── toast.js            ← Notificaciones flotantes
-│   ├── modal.js            ← Modal genérico reutilizable
-│   ├── router.js           ← Navegación entre páginas (navegarA)
-│   ├── render.js           ← Funciones de render del dashboard
-│   ├── transacciones.js    ← Consignar, retirar, transferir, consultar
-│   ├── servicios.js        ← Pagar servicios, recargas, comprar a cuotas
-│   ├── documentos.js       ← Páginas de movimientos/extractos + recibos
-│   ├── perfil.js           ← Página de perfil + cambio de contraseña
-│   ├── auth.js             ← Login y cierre de sesión
-│   └── app.js              ← Punto de entrada JS (importa todo y registra listeners)
-└── uploads/
-    └── index.html          ← Archivo de referencia del diseño original
-```
+**© Daniela Vivas · © Andrea Cuartas — 2026**
 
 ---
 
@@ -41,70 +16,10 @@ miplata_front_momento3/
 
 1. Abre la carpeta `miplata_front_momento3` en VS Code.
 2. Haz clic en **"Go Live"** en la barra de estado inferior.
-3. Se abrirá `http://127.0.0.1:5500/` → carga `index.html` automáticamente.
+3. Se abrirá `http://127.0.0.1:5500/` automáticamente.
 4. Credenciales demo: usuario `maria`, contraseña `1234`.
 
-### Por qué antes no funcionaba con Live Server
-
-Live Server buscaba `index.html` en la raíz del proyecto. Como no existía, abría `uploads/index.html`  
-(un archivo de instrucciones del diseño, no la app). Al crear `index.html` en la raíz se resuelve.
-
----
-
-## Características implementadas
-
-| Módulo | Descripción |
-|--------|-------------|
-| **POO** | Herencia: `Cuenta` → `CuentaAhorros`, `CuentaCorriente`, `TarjetaCredito` |
-| **Router** | Navegación sin recarga entre páginas completas (Dashboard, Perfil, Movimientos, Extractos) |
-| **Scheduler** | Organización de tareas por prioridad en el Event Loop (ver abajo) |
-| **ES6 Modules** | Código dividido en 13 módulos con `import/export` explícitos |
-
----
-
-## Scheduler y Event Loop
-
-`js/utils.js` exporta un objeto `Scheduler` que organiza tareas según su prioridad:
-
-```
-Call Stack (síncrono)     → código normal, bloquea el hilo
-      ↓
-Microtareas               → Promise.resolve().then(fn)   — antes del próximo repintado
-      ↓
-Animation Frame           → requestAnimationFrame(fn)    — sincronizado con pantalla (~60fps)
-      ↓
-Macrotareas               → setTimeout(fn, ms)           — al final de la cola
-      ↓
-Idle                      → requestIdleCallback(fn)      — cuando el browser está libre
-```
-
-**Uso en el código:**
-
-```javascript
-// Render de DOM → siempre en animation frame (evita layout thrashing)
-Scheduler.frame(() => { lista.innerHTML = movs.map(movRow).join(''); });
-
-// Efectos tras una operación → microtarea (alta prioridad)
-Scheduler.micro(() => { renderTabs(); renderSaldo(); });
-
-// Mostrar recibo tras cerrar modal → macrotarea diferida
-Scheduler.defer(() => abrirRecibo(mov), 400);
-```
-
----
-
-## Navegación (Router)
-
-El router en `js/router.js` maneja 4 vistas:
-
-| Vista | Acción sidebar | Descripción |
-|-------|---------------|-------------|
-| Dashboard | `data-action="inicio"` | Tarjeta + movimientos recientes |
-| Mi Perfil | `data-action="perfil"` | Página completa con foto y datos |
-| Movimientos | `data-action="movimientos"` | Historial completo por cuenta |
-| Extractos | `data-action="extractos"` | Filtros por tipo + descarga HTML |
-
-Las acciones transaccionales (Consignar, Retirar, etc.) siguen abriendo modales ya que son formularios cortos.
+> Para abrir con Chrome en lugar de Edge: `Configuración → Live Server → "liveServer.settings.CustomBrowser": "chrome"`
 
 ---
 
@@ -112,5 +27,110 @@ Las acciones transaccionales (Consignar, Retirar, etc.) siguen abriendo modales 
 
 | Usuario | Contraseña | Nombre |
 |---------|-----------|--------|
-| `maria` | `1234` | María López |
-| `juanp` | `0000` | Juan Pérez (solo receptor de transferencias) |
+| `maria` | `1234` | María López (Ahorros + Corriente + Tarjeta) |
+| `juanp` | `0000` | Juan Pérez (Ahorros) |
+
+También puedes **crear tu propio usuario** desde el botón "Regístrate" en la pantalla de login.
+
+---
+
+## Estructura del proyecto
+
+```
+miplata_front_momento3/
+├── index.html              ← Único HTML: contiene todas las vistas de la app
+├── css/
+│   └── main.css            ← Todos los estilos (variables, layout, componentes, print)
+└── js/
+    ├── app.js              ← Punto de entrada: inicializa módulos y registra listeners
+    ├── state.js            ← Estado global: datos demo + ui.cuentaActiva, etc.
+    ├── models.js           ← Clases de dominio: Cliente, Cuenta, TarjetaCredito, Movimiento
+    ├── utils.js            ← Helpers ($, fmt, Scheduler)
+    ├── router.js           ← Navegación SPA entre vistas (navegarA)
+    ├── render.js           ← Actualiza el DOM del dashboard con el estado actual
+    ├── modal.js            ← Sistema de modales genéricos y reutilizables
+    ├── toast.js            ← Notificaciones temporales (éxito / error / aviso)
+    ├── auth.js             ← Login, logout y registro de nuevos usuarios
+    ├── transacciones.js    ← Consignar, retirar (ATM), transferir, consultar saldo
+    ├── servicios.js        ← Pagar servicios públicos y recargas de celular
+    ├── tienda.js           ← Catálogo de 66 tiendas y compras a cuotas con tarjeta
+    ├── certificados.js     ← Certificados de cuentas, deuda y tributarios (imprimibles)
+    ├── perfil.js           ← Edición de perfil, cambio de clave, activar productos
+    └── documentos.js       ← Historial de movimientos, extractos y comprobantes
+```
+
+---
+
+## Funcionalidades
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| **Login y registro** | Autenticación con bloqueo por 3 intentos fallidos. Registro de nuevos clientes con cuenta de ahorros automática. |
+| **Multi-usuario** | Varios usuarios pueden iniciar sesión en la misma sesión sin perder datos entre cambios. |
+| **Dashboard** | Tarjeta de saldo animada con pestañas por cuenta, resumen de ingresos/gastos y movimientos recientes. |
+| **Consignar** | Depósito a cuenta propia o a otra cuenta buscando por cédula del destinatario. |
+| **Retirar (ATM)** | Selección de cuenta estilo cajero (Ahorros, Corriente o Avance TC) antes de ingresar el monto. |
+| **Transferir** | Transferencia entre cuentas propias o a otros usuarios por cédula. |
+| **Consultar saldo** | Muestra saldo, condiciones de la cuenta y los últimos 3 movimientos. |
+| **Pagar servicios** | EPM, Claro Hogar, Tigo, Acueducto, Gas Natural y EPS Sura. |
+| **Recargas** | Recarga de celular a Claro, Movistar, Tigo y WOM. |
+| **Tienda (cuotas)** | 66 almacenes colombianos en 9 categorías. Compra a cuotas con cálculo de interés. |
+| **Movimientos** | Historial completo filtrable por cuenta con comprobante imprimible por transacción. |
+| **Extractos** | Estado de cuenta filtrable por tipo de movimiento y descargable como PDF. |
+| **Certificados** | Certificado de cada cuenta/tarjeta, certificado de deuda y certificados tributarios. |
+| **Perfil** | Edición de datos personales, foto de perfil, cambio de contraseña y activación de Cuenta Corriente / Tarjeta de Crédito. |
+
+---
+
+## Vistas (Router)
+
+| Vista | `data-action` | Tipo |
+|-------|--------------|------|
+| Dashboard | `inicio` | Página completa |
+| Mi Perfil | `perfil` | Página completa |
+| Movimientos | `movimientos` | Página completa |
+| Extractos | `extractos` | Página completa |
+| Certificados | `certificados` | Página completa |
+| Tienda | `tienda` | Página completa |
+| Consignar / Retirar / Transferir / Consultar | — | Modal flotante |
+| Pagar servicios / Recargas | — | Modal flotante |
+
+---
+
+## Reglas de negocio por tipo de cuenta
+
+| Cuenta | Límite de retiro | Condición extra |
+|--------|-----------------|-----------------|
+| Ahorros | Saldo disponible | +1.5% de interés sobre el monto retirado |
+| Corriente | Saldo + 20% (sobregiro) | Sin interés adicional |
+| Tarjeta de crédito | Cupo disponible | ≤2 cuotas: 0% · 3-6 cuotas: 1.9% mensual · ≥7 cuotas: 2.3% mensual |
+
+---
+
+## Scheduler y Event Loop
+
+`utils.js` exporta un `Scheduler` que organiza tareas según su prioridad en el event loop:
+
+```
+Microtareas    → Promise.resolve().then(fn)   — antes del próximo repintado
+Animation Frame → requestAnimationFrame(fn)   — sincronizado con pantalla (~60fps)
+Macrotareas    → setTimeout(fn, ms)           — al final de la cola
+```
+
+```javascript
+Scheduler.micro(() => { renderTabs(); renderSaldo(); });   // cambios de visibilidad DOM
+Scheduler.frame(() => { lista.innerHTML = movsHtml; });   // render del dashboard
+Scheduler.defer(() => abrirRecibo(mov), 400);             // recibo tras cerrar modal
+```
+
+---
+
+## Conceptos aplicados
+
+- **POO con herencia:** `CuentaAhorros` y `CuentaCorriente` extienden `Cuenta`
+- **ES6 Modules:** 15 módulos con `import/export` explícitos, sin variables globales
+- **SPA (Single Page App):** una sola página HTML; el router muestra/oculta vistas
+- **Event Delegation:** un listener en `document` captura todos los `data-action`
+- **Estado compartido mutable:** `cliente` y `ui` son vistos por todos los módulos en tiempo real
+- **Template literals:** generación de HTML dinámico con interpolación de variables
+- **Intl.NumberFormat:** formato de moneda COP nativo del navegador

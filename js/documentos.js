@@ -1,5 +1,5 @@
 import { $, $$, fmt, fmtFecha, fmtFechaLarga, opNumero, Scheduler } from './utils.js';
-import { cliente, ui } from './state.js';
+import { cliente, ui } from './estado.js';
 import { movRow, movTipoLabel } from './render.js';
 import { abrirModal, cerrarModal } from './modal.js';
 import { toast } from './toast.js';

@@ -1,5 +1,5 @@
 import { $, $$, fmt, fmtFecha, iniciales, opNumero, Scheduler } from './utils.js';
-import { cliente, ui } from './state.js';
+import { cliente, ui } from './estado.js';
 import { TarjetaCredito } from './models.js';
 
 // Callback para abrir el recibo al hacer clic en un movimiento.

@@ -9,19 +9,22 @@
  */
 
 import { $, $$ } from './utils.js';
-import { ui } from './state.js';
+import { ui } from './estado.js';
 import { initModal } from './modal.js';
 import { navegarA, registrarOnEnter } from './router.js';
 import { inicializarPanel, renderTabs, renderSaldo, renderMovimientos, renderStats, setMovClickHandler } from './render.js';
 import { abrirRecibo, initMovimientosPage, initExtractosPage } from './documentos.js';
-import { initLogin, cerrarSesion } from './auth.js';
+import { initLogin, cerrarSesion, initRegistro } from './auth.js';
 import { initPerfilPage, accionCambiarPass } from './perfil.js';
 import { accionConsultar, accionConsignar, accionRetirar, accionTransferir } from './transacciones.js';
-import { accionServicios, accionRecargas, accionComprarTC } from './servicios.js';
+import { accionServicios, accionRecargas } from './servicios.js';
+import { initCertificadosPage } from './certificados.js';
+import { initTiendaPage } from './tienda.js';
 
 // ── 1. Inicializar módulos de infraestructura ─────────────────────────────
 initModal();
 initLogin();
+initRegistro();
 
 // ── 2. Inyectar callback de recibo en render (evita dependencia circular) ─
 setMovClickHandler(abrirRecibo);
@@ -32,7 +35,9 @@ registrarOnEnter('inicio', () => {
 });
 registrarOnEnter('perfil',      initPerfilPage);
 registrarOnEnter('movimientos', initMovimientosPage);
-registrarOnEnter('extractos',   initExtractosPage);
+registrarOnEnter('extractos',    initExtractosPage);
+registrarOnEnter('certificados', initCertificadosPage);
+registrarOnEnter('tienda',       initTiendaPage);
 
 // ── 4. Acciones de la barra superior ─────────────────────────────────────
 $('#verTodos').addEventListener('click', () => navegarA('movimientos'));
@@ -49,7 +54,7 @@ $('#btnMenu').addEventListener('click', () => $('#sidebar').classList.toggle('op
 //   • Acciones de NAVEGACIÓN  → llaman a navegarA() → muestran una página completa
 //   • Acciones MODALES        → abren un modal flotante
 //
-const PAGINAS     = new Set(['inicio', 'perfil', 'movimientos', 'extractos']);
+const PAGINAS     = new Set(['inicio', 'perfil', 'movimientos', 'extractos', 'certificados', 'tienda']);
 const ACCIONES_MODAL = {
   consultar:   accionConsultar,
   consignar:   accionConsignar,
@@ -58,7 +63,6 @@ const ACCIONES_MODAL = {
   cambiarPass: accionCambiarPass,
   servicios:   accionServicios,
   recargas:    accionRecargas,
-  comprarTC:   accionComprarTC,
 };
 
 document.addEventListener('click', (e) => {
