@@ -1,5 +1,6 @@
 import { $ } from './utils.js';
 import { cliente, clientes, ui } from './estado.js';
+import { guardar, cerrarSesionLS } from './storage.js';
 import { Cliente, CuentaAhorros } from './models.js';
 import { toast } from './toast.js';
 import { inicializarPanel } from './render.js';
@@ -25,33 +26,32 @@ export function initLogin() {
     // Busca en el pool (demo + registrados)
     const encontrado = clientes.find(c => c.usuario === u);
 
-    if (encontrado && encontrado.bloqueado)
-      return toast('Cuenta bloqueada', 'Has superado los intentos permitidos.', 'error');
+    if (!encontrado)
+      return toast('Usuario no encontrado', 'Ese usuario no está registrado.', 'error');
 
-    if (encontrado && encontrado.verificarPassword(p)) {
-      // Si es un usuario diferente al activo, carga sus datos
+    try {
+      encontrado.autenticar(p); // lanza si falla o está bloqueado
+      // ─── Autenticación exitosa ───
       if (encontrado !== cliente) {
         _preservarEnPool();
         Object.assign(cliente, encontrado);
         ui.cuentaActiva = encontrado.cuentas[0];
       }
-      encontrado.intentosFallidos = 0;
       ui.intentosLogin = 0;
       $('#intentos').classList.remove('show');
       $('#login').classList.add('hidden');
       $('#app').classList.remove('hidden');
       inicializarPanel();
       navegarA('inicio');
+      guardar(clientes, encontrado.usuario);
+      console.log('[MiPlata] Login exitoso:', cliente.nombre);
       toast(`¡Hola, ${cliente.nombre.split(' ')[0]}!`, 'Sesión iniciada correctamente.', 'success');
-    } else {
-      ui.intentosLogin++;
-      if (encontrado) encontrado.intentosFallidos = ui.intentosLogin;
-      else cliente.intentosFallidos = ui.intentosLogin;
+    } catch {
+      // ─── Autenticación fallida ───
+      ui.intentosLogin = encontrado.intentosFallidos;
       $('#intentos').classList.add('show');
       $('#intentosNum').textContent = ui.intentosLogin;
-      if (ui.intentosLogin >= 3) {
-        if (encontrado) encontrado.bloqueado = true;
-        else cliente.bloqueado = true;
+      if (encontrado.bloqueado) {
         $('#intentos').innerHTML = '🔒 Cuenta bloqueada por 3 intentos fallidos.';
         toast('Cuenta bloqueada', 'Superaste los 3 intentos.', 'error');
       } else {
@@ -72,6 +72,8 @@ export function cerrarSesion() {
 
   $('#btnConfirmLogout').addEventListener('click', () => {
     cerrarModal();
+    cerrarSesionLS(clientes);
+    console.log('[MiPlata] Sesión cerrada:', cliente.usuario);
     $('#app').classList.add('hidden');
     $('#login').classList.remove('hidden');
     $('#loginPass').value = '';
@@ -142,6 +144,8 @@ export function initRegistro() {
     $('#app').classList.remove('hidden');
     inicializarPanel();
     navegarA('inicio');
+    guardar(clientes, nuevoCliente.usuario);
+    console.log('[MiPlata] Registro exitoso:', nuevoCliente.nombre);
     toast(`¡Bienvenido/a, ${nombre.split(' ')[0]}!`, 'Cuenta creada. Ya puedes operar.', 'success');
   });
 }

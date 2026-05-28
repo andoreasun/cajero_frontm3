@@ -1,5 +1,30 @@
 'use strict';
 
+// ── Contratos de interfaz (simulación JS del patrón de interfaces) ───────────
+
+/** ITransaction: contrato base para cualquier producto financiero transaccional. */
+export const ITransaction = (Base = Object) => class extends Base {
+  consignar(monto)     { throw new Error(`${this.constructor.name} debe implementar consignar()`); }
+  retirar(monto)       { throw new Error(`${this.constructor.name} debe implementar retirar()`); }
+  consultarSaldo()     { throw new Error(`${this.constructor.name} debe implementar consultarSaldo()`); }
+  obtenerMovimientos() { throw new Error(`${this.constructor.name} debe implementar obtenerMovimientos()`); }
+};
+
+/** ITransferible: contrato para productos que soportan transferencias entre cuentas. */
+export const ITransferible = (Base = Object) => class extends Base {
+  transferir(destino, monto) { throw new Error(`${this.constructor.name} debe implementar transferir()`); }
+  validarDestino(destino)    { throw new Error(`${this.constructor.name} debe implementar validarDestino()`); }
+};
+
+/** IAutenticable: contrato de autenticación para entidades con credenciales propias. */
+export class IAutenticable {
+  autenticar(password)             { throw new Error('Implementar autenticar()'); }
+  cerrarSesion()                   { throw new Error('Implementar cerrarSesion()'); }
+  cambiarContrasena(actual, nueva) { throw new Error('Implementar cambiarContrasena()'); }
+}
+
+// ── Movimiento ───────────────────────────────────────────────────────────────
+
 export class Movimiento {
   static lastId = 1000;
   constructor(tipo, valor, descripcion = '', meta = {}) {
@@ -12,9 +37,12 @@ export class Movimiento {
   }
 }
 
-export class Cuenta {
+// ── Cuenta (implements ITransaction + ITransferible) ────────────────────────
+
+export class Cuenta extends ITransferible(ITransaction()) {
   #saldo;
   constructor(numero, titular, saldoInicial = 0) {
+    super();
     this.numero = numero;
     this.titular = titular;
     this.#saldo = saldoInicial;
@@ -22,16 +50,46 @@ export class Cuenta {
   }
   get saldo() { return this.#saldo; }
   set saldo(v) { this.#saldo = v; }
+
+  // ITransaction
+  consultarSaldo() { return this.#saldo; }
+  obtenerMovimientos() { return [...this.movimientos]; }
+
   consignar(monto, desc = 'Consignación en efectivo', meta = {}) {
     if (!Number.isFinite(monto) || monto <= 0) throw new Error('El monto debe ser positivo');
     this.#saldo += monto;
     const m = new Movimiento('consignacion', monto, desc, meta);
     this.movimientos.unshift(m);
+    console.log(`[MiPlata] Consignación en ${this.numero}: +$${monto.toLocaleString('es-CO')} → saldo $${this.#saldo.toLocaleString('es-CO')}`);
     return m;
   }
+
   retirar() { throw new Error('Implementar en subclase'); }
+
+  // ITransferible
+  validarDestino(destino) {
+    if (!(destino instanceof Cuenta)) throw new Error('Destino inválido');
+    if (this.numero === destino.numero) throw new Error('Prohibido transferir al mismo producto');
+  }
+
+  transferir(destino, monto) {
+    this.validarDestino(destino);
+    if (!Number.isFinite(monto) || monto <= 0) throw new Error('Monto inválido');
+    if (monto > this.#saldo) throw new Error('Saldo insuficiente para la transferencia');
+    this.#saldo -= monto;
+    destino.saldo += monto;
+    const mDebito  = new Movimiento('transferencia', monto, `Transferencia a ${destino.numero}`);
+    const mCredito = new Movimiento('consignacion',  monto, `Recibida desde ${this.numero}`);
+    this.registrarMovimiento(mDebito);
+    destino.registrarMovimiento(mCredito);
+    console.log(`[MiPlata] Transferencia: ${this.numero} → ${destino.numero}: $${monto.toLocaleString('es-CO')}`);
+    return { debito: mDebito, credito: mCredito };
+  }
+
   registrarMovimiento(m) { this.movimientos.unshift(m); return m; }
 }
+
+// ── CuentaAhorros ────────────────────────────────────────────────────────────
 
 export class CuentaAhorros extends Cuenta {
   static TASA = 0.015;
@@ -44,9 +102,12 @@ export class CuentaAhorros extends Cuenta {
     const m = new Movimiento('retiro', monto,
       `Retiro (interés acreditado: $${Math.round(interes).toLocaleString('es-CO')})`, { interes });
     this.registrarMovimiento(m);
+    console.log(`[MiPlata] Retiro Ahorros ${this.numero}: -$${monto.toLocaleString('es-CO')}, interés +$${Math.round(interes).toLocaleString('es-CO')} → saldo $${this.saldo.toLocaleString('es-CO')}`);
     return { mov: m, nuevoSaldo: this.saldo, interes };
   }
 }
+
+// ── CuentaCorriente ──────────────────────────────────────────────────────────
 
 export class CuentaCorriente extends Cuenta {
   static SOBREGIRO = 0.20;
@@ -60,9 +121,12 @@ export class CuentaCorriente extends Cuenta {
     const m = new Movimiento('retiro', monto,
       enSobregiro ? 'Retiro con sobregiro' : 'Retiro', { sobregiro: enSobregiro });
     this.registrarMovimiento(m);
+    console.log(`[MiPlata] Retiro Corriente ${this.numero}: -$${monto.toLocaleString('es-CO')}${enSobregiro ? ' (SOBREGIRO)' : ''} → saldo $${this.saldo.toLocaleString('es-CO')}`);
     return { mov: m, nuevoSaldo: this.saldo, sobregiro: enSobregiro };
   }
 }
+
+// ── TarjetaCredito ───────────────────────────────────────────────────────────
 
 export class TarjetaCredito extends Cuenta {
   constructor(n, t, cupo = 0) {
@@ -88,14 +152,20 @@ export class TarjetaCredito extends Cuenta {
       `${desc} · ${cuotas} cuota(s) de $${Math.round(cm).toLocaleString('es-CO')}`,
       { cuotas, cuotaMensual: cm, tasa });
     this.registrarMovimiento(m);
+    console.log(`[MiPlata] Compra TC ${this.numero}: $${monto.toLocaleString('es-CO')} en ${cuotas} cuota(s) de $${Math.round(cm).toLocaleString('es-CO')}/mes → deuda $${this.deuda.toLocaleString('es-CO')}`);
     return { mov: m, cuotaMensual: cm, totalDeuda: this.deuda, tasa };
   }
   retirar() { throw new Error('La tarjeta de crédito no permite retiros'); }
   get cupoDisponible() { return this.cupo - this.deuda; }
 }
 
-export class Cliente {
+// ── Cliente (implements IAutenticable) ───────────────────────────────────────
+
+export class Cliente extends IAutenticable {
+  static #MAX_INTENTOS = 3;
+
   constructor({ identificacion, nombre, celular, usuario, password }) {
+    super();
     this.identificacion = identificacion;
     this.nombre = nombre;
     this.celular = celular;
@@ -108,6 +178,37 @@ export class Cliente {
     this.bloqueado = false;
     this.foto = null;
   }
+
   agregarCuenta(c) { this.cuentas.push(c); }
+
+  // IAutenticable
+  autenticar(password) {
+    if (this.bloqueado)
+      throw new Error('Cuenta bloqueada por exceso de intentos fallidos');
+    if (this.password !== password) {
+      this.intentosFallidos++;
+      if (this.intentosFallidos >= Cliente.#MAX_INTENTOS) {
+        this.bloqueado = true;
+        throw new Error('Cuenta bloqueada tras 3 intentos fallidos');
+      }
+      console.warn(`[MiPlata] Autenticación fallida: ${this.usuario} — intento ${this.intentosFallidos} de ${Cliente.#MAX_INTENTOS}`);
+      throw new Error(
+        `Contraseña incorrecta. Intentos restantes: ${Cliente.#MAX_INTENTOS - this.intentosFallidos}`
+      );
+    }
+    this.intentosFallidos = 0;
+    console.log(`[MiPlata] Autenticación exitosa: ${this.usuario}`);
+    return true;
+  }
+
+  cerrarSesion() {
+    // La sesión es gestionada por la capa de presentación (UI)
+  }
+
+  cambiarContrasena(actual, nueva) {
+    this.autenticar(actual);
+    this.password = nueva;
+  }
+
   verificarPassword(p) { return this.password === p; }
 }

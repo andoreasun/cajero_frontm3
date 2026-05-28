@@ -9,6 +9,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="css/main.css" />
+  <script>
+    // Oculta el login ANTES del primer render si hay sesión activa en localStorage
+    (function () {
+      try {
+        var d = JSON.parse(localStorage.getItem('miplata_v1') || 'null');
+        if (d && d.usuarioActivo) document.documentElement.classList.add('sesion-activa');
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    html.sesion-activa #login { display: none !important; }
+  </style>
 </head>
 <body>
 

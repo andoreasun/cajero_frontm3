@@ -1,5 +1,6 @@
 import { $, iniciales, Scheduler } from './utils.js';
-import { cliente, ui } from './estado.js';
+import { cliente, clientes, ui } from './estado.js';
+import { guardar } from './storage.js';
 import { CuentaCorriente, TarjetaCredito } from './models.js';
 import { toast } from './toast.js';
 import { abrirModal, cerrarModal } from './modal.js';
@@ -138,12 +139,14 @@ function _bindBotones() {
     const nueva     = $('#pfPassNueva').value;
     const confirma  = $('#pfPassConfirma').value;
     if (!cliente.verificarPassword(actual)) return toast('Clave incorrecta', 'No coincide con la actual.', 'error');
-    if (!nueva || nueva.length < 4)         return toast('Clave inválida',    'Mínimo 4 caracteres.',    'error');
-    if (nueva !== confirma)                  return toast('No coincide',       'La confirmación no coincide.', 'error');
-    cliente.password = nueva;
+    if (!nueva || nueva.length < 4)         return toast('Clave inválida', 'Mínimo 4 caracteres.', 'error');
+    if (nueva !== confirma)                  return toast('No coincide', 'La confirmación no coincide.', 'error');
+    cliente.cambiarContrasena(actual, nueva);
+    guardar(clientes, cliente.usuario);
     $('#pfPassActual').value = '';
     $('#pfPassNueva').value  = '';
     $('#pfPassConfirma').value = '';
+    console.log('[MiPlata] Contraseña actualizada para:', cliente.usuario);
     toast('Contraseña actualizada', 'Recuerda usarla en tu próximo ingreso.', 'success');
   });
 }
@@ -218,7 +221,9 @@ export function accionCambiarPass() {
     if (!cliente.verificarPassword(a)) return toast('Clave incorrecta', 'No coincide con la actual.', 'error');
     if (!n || n.length < 4)            return toast('Clave inválida', 'Mínimo 4 caracteres.', 'error');
     if (n !== c)                        return toast('No coincide', 'La confirmación no coincide.', 'error');
-    cliente.password = n;
+    cliente.cambiarContrasena(a, n);
+    guardar(clientes, cliente.usuario);
+    console.log('[MiPlata] Contraseña cambiada (modal) para:', cliente.usuario);
     cerrarModal();
     toast('Contraseña actualizada', 'Recuerda usarla en tu próximo ingreso.', 'success');
   });

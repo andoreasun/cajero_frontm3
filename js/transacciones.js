@@ -1,5 +1,6 @@
 import { $, $$, fmt, Scheduler } from './utils.js';
 import { cliente, clientes, ui } from './estado.js';
+import { guardar } from './storage.js';
 import { Movimiento, CuentaAhorros, CuentaCorriente, TarjetaCredito } from './models.js';
 import { abrirModal, cerrarModal } from './modal.js';
 import { toast } from './toast.js';
@@ -122,12 +123,14 @@ export function accionConsignar() {
           { origen: `Cédula ${cliente.identificacion}`, titular: cliente.nombre });
         cuentaDest.registrarMovimiento(m);
         cerrarModal();
+        guardar(clientes, cliente.usuario);
         toast('Consignación exitosa', `${fmt(monto)} enviado a ${clienteDest.nombre}`, 'success');
         Scheduler.defer(() => abrirRecibo(m), 400);
       } else {
         const m = ui.cuentaActiva.consignar(monto, concepto || 'Consignación en efectivo');
         cerrarModal();
         renderSaldo(); renderMovimientos(); renderStats();
+        guardar(clientes, cliente.usuario);
         toast('Consignación exitosa', `${fmt(monto)} · Saldo: ${fmt(ui.cuentaActiva.saldo)}`, 'success');
         Scheduler.defer(() => abrirRecibo(m), 400);
       }
@@ -198,6 +201,7 @@ function _procesarRetiro(c) {
         c.registrarMovimiento(m);
         cerrarModal();
         renderSaldo(); renderMovimientos(); renderStats();
+        guardar(clientes, cliente.usuario);
         toast('Avance exitoso', `${fmt(monto)} · Cupo restante: ${fmt(c.cupoDisponible)}`, 'warn');
         Scheduler.defer(() => abrirRecibo(m), 400);
       } catch (err) { toast('No se pudo procesar', err.message, 'error'); }
@@ -228,6 +232,7 @@ function _procesarRetiro(c) {
       const r = c.retirar(monto);
       cerrarModal();
       renderSaldo(); renderMovimientos(); renderStats();
+      guardar(clientes, cliente.usuario);
       toast('Retiro exitoso', `${fmt(monto)} · Saldo: ${fmt(r.nuevoSaldo)}`, r.sobregiro ? 'warn' : 'success');
       Scheduler.defer(() => abrirRecibo(r.mov), 400);
     } catch (err) { toast('No se pudo retirar', err.message, 'error'); }
@@ -334,6 +339,7 @@ export function accionTransferir() {
 
         cerrarModal();
         renderSaldo(); renderMovimientos(); renderStats();
+        guardar(clientes, cliente.usuario);
         toast('Avance realizado', `${fmt(monto)} a ${titular}`, 'warn');
         Scheduler.defer(() => abrirRecibo(m), 400);
       } catch (err) { toast('No se pudo procesar', err.message, 'error'); }
@@ -440,6 +446,7 @@ export function accionTransferir() {
 
       cerrarModal();
       renderSaldo(); renderMovimientos(); renderStats();
+      guardar(clientes, cliente.usuario);
       toast('Transferencia exitosa', `${fmt(monto)} a ${titular}`, 'success');
       Scheduler.defer(() => abrirRecibo(m), 400);
     } catch (err) { toast('No se pudo transferir', err.message, 'error'); }

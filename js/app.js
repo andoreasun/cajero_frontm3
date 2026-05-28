@@ -9,7 +9,8 @@
  */
 
 import { $, $$ } from './utils.js';
-import { ui } from './estado.js';
+import { ui, cliente, clientes } from './estado.js';
+import { guardar, cargar, cerrarSesionLS } from './storage.js';
 import { initModal } from './modal.js';
 import { navegarA, registrarOnEnter } from './router.js';
 import { inicializarPanel, renderTabs, renderSaldo, renderMovimientos, renderStats, setMovClickHandler } from './render.js';
@@ -25,6 +26,23 @@ import { initTiendaPage } from './tienda.js';
 initModal();
 initLogin();
 initRegistro();
+
+// ── Auto-restaurar sesión desde localStorage ──────────────────────────────
+const _guardado = cargar();
+if (_guardado?.usuarioActivo) {
+  clientes.splice(0, clientes.length, ..._guardado.clientes);
+  const _activo = clientes.find(c => c.usuario === _guardado.usuarioActivo);
+  if (_activo) {
+    Object.assign(cliente, _activo);
+    clientes[clientes.indexOf(_activo)] = cliente; // mantener referencia compartida
+    ui.cuentaActiva = _activo.cuentas[0] ?? ui.cuentaActiva;
+    $('#login').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    inicializarPanel();
+    navegarA('inicio');
+    console.log('[MiPlata] Sesión restaurada automáticamente:', cliente.nombre);
+  }
+}
 
 // ── 2. Inyectar callback de recibo en render (evita dependencia circular) ─
 setMovClickHandler(abrirRecibo);
